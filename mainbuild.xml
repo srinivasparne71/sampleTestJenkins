@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="Automation" basedir=".">
+	<tstamp>
+		<format property="CURRENT_TIME" pattern="dd-MMM-yyyy_HH_mm_ss" />
+	</tstamp>
+	<property name="basedir" value="." />
+	<property name="lib" value="${basedir}/lib" />
+	<property name="src" value="${basedir}/src" />
+	<property name="bin" value="${basedir}/bin" />
+	
+	<property file="${basedir}/config-files/project.properties" prefix="projectprop" />
+	
+	<property name="baseURL" value="https://bbssqa.computenext.com/" />
+	<property name="ticketNUM" value="aut_num" />
+	<property name="runUSER" value="aut_user" />
+	<property name="suiteDESC" value="Description Not Specified In Suite File" />
+	<property name="BROWSER" value="none" />
+	
+	<property name="testng-report-dir" value="${basedir}/test-output" />
+	<property name="log-report-dir" value="${basedir}/log" />
+	<property name="testng-reports" location="${projectprop.ngreportBackup}/${ticketNUM}-[${runUSER}]/testngReports-${CURRENT_TIME}" />
+	<property name="log-reports" location="${projectprop.logBackup}/${ticketNUM}-[${runUSER}]/logReports-${CURRENT_TIME}" />
+	<property name="to-jenkins-Workspace" location="${projectprop.jenkinsRootPath}/workspace" />
+	<property name="to-jenkins-job-Workspace" location="${projectprop.jenkinsRootPath}/workspace/${jenkinsJOB}/testngReports" />
+	
+	<property name="emailMailHost" value="${projectprop.emailMailHost}" />
+	<property name="emailMailPort" value="${projectprop.emailMailPort}" />
+	<property name="emailFromUser" value="${projectprop.emailFromUser}" />
+	<property name="emailFromPassword" value="${projectprop.emailFromPassword}" />
+	<property name="emailFromMail" value="${projectprop.emailFromMail}" />
+	<property name="emailToList" value="${projectprop.emailToList}" />
+	<property name="emailToCC" value="${projectprop.emailToCC}" />
+	<property name="emailToBCC" value="${projectprop.emailToBCC}" />
+	<property name="emailReplyTo" value="${projectprop.emailReplyTo}" />
+	<property name="emailSubject" value="${projectprop.emailSubject}-${CURRENT_TIME}" />
+	<property name="emailMessage" value="${projectprop.emailMessage}" />
+	<property name="emailAttachment1Path=" value="${projectprop.emailAttachment1Path}" />
+	
+	<!-- Setting Class path.-->
+	
+	<path id="classpath">
+		<pathelement location="${bin}" />
+		<fileset dir="${lib}" includes="*.jar">
+			<include name="javax.mail-api-1.4.7" />
+			<include name="activation" />
+		</fileset>
+	</path>
+	
+	<!-- Backup Folder Info -->
+	<target name="projectpropertiesfile">
+		<echo>Log Backup Path : ${projectprop.logBackup}</echo>
+		<echo>Testng Backup Path : ${projectprop.ngreportBackup}</echo>
+	</target>
+	
+	<!-- Welcome Info -->
+	<target name="info" depends="projectpropertiesfile">
+		<echo>.......baseURL: ${baseURL} ......</echo>
+	</target>
+	
+	<!-- Deleteing directories -->
+	<target name="clean" depends="info">
+		<echo message="deleting existing directories" />
+		<delete dir="${bin}" />
+		<echo message="deleting existing directory ${bin}" />
+		<delete dir="${testng-report-dir}" />
+		<echo message="deleting existing directory ${testng-report-dir}" />
+		<delete dir="${log-report-dir}" />
+		<echo message="deleting existing directory ${log-report-dir}" />
+	</target>
+	
+	<!-- Creating directories -->
+	<target name="create-directories" depends="clean">
+		<echo> /* Create Directories */ </echo>
+		<mkdir dir="${bin}" />
+		<mkdir dir="${testng-report-dir}" />
+	</target>
+	
+	<!-- build all java file to class binary -->
+	<target name="compile" depends="create-directories">
+		<echo> /* Compiling Directory Classes */ </echo>
+		<javac srcdir="${src}" classpathref="classpath" includeantruntime="no" destdir="${bin}"  encoding="utf-8"/>
+	</target>
+	
+	<!-- Run failed testcases -->
+	<target name="Rerun">
+		<echo message="running failed test cases " />
+		<testng classpath="${build.dir};${lib}/*">
+			<xmlfileset dir="${basedir}/test-output" includes="testng-failed.xml" />
+		</testng>
+	</target>
+	
+	<!-- Runs the TestngFile and generates Reportng report for reportNG -->
+		<target name="SampleAntTest_U" depends="compile">
+			<echo>/* BBSS Automation TestCases..Executing */</echo>
+			<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="classpath" />
+			<mkdir dir="${testng-report-dir}" />
+			<testng outputdir="${testng-report-dir}" classpathref="classpath" useDefaultListeners="true" delegateCommandSystemProperties="true">
+				<jvmarg value="-DbaseURL=${baseURL}" />
+				<jvmarg value="-DresellerPortalURL=${runUSER}" />
+				<jvmarg value="-DticketNUM=${ticketNUM}" />
+				<jvmarg value="-DsuiteDESC=${suiteDESC}" />
+				<jvmarg value="-DBROWSER=${BROWSER}" />
+				
+
+				<xmlfileset dir="${basedir}" includes="sample_ng.xml" />
+				<!-- generate report title 
+				<sysproperty key="org.uncommons.reportng.title" value="BBSS UI Automation" />
+				<sysproperty key="org.uncommons.reportng.escape-output" value="true" /> --> 
+			</testng>
+		</target>
+		
+	</project>
+	
+	
+	
+	
+	
+	

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SAMPLE TEST" default="run" basedir=".">
+
+<!-- cleaning the destination folders -->
+	<target name="clean">
+		<echo message="deleting existing build directory" />
+		<delete dir="${bin}" />
+	</target>
+	
+	<target name="SampleTestNG">
+		<ant antfile="mainBuild.xml" target="SampleAntTest_U" />
+	</target>
+	
+</project>
